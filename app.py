@@ -3,6 +3,7 @@ from flask import Flask
 from flask import render_template
 from flask import request
 from flask import redirect
+from models import*
 
 from flask_sqlalchemy import SQLAlchemy
 
@@ -16,28 +17,24 @@ app.config["SQLALCHEMY_DATABASE_URI"] = database_file
 
 db = SQLAlchemy(app)
 
-class Book(db.Model):
-    id = db.Column(db.Integer, primary_key = True)
-    title = db.Column(db.String(80),unique = True, nullable = False)
-    autor = db.Column(db.String(80), nullable = False)
-    num_pags = db.Column(db.Integer, nullable = False)
-    editora = db.Column(db.String(255), nullable=True)
-
-    def __repr__(self):
-        return "<Title: {}>".format(self.title)
-    
-
 @app.route('/', methods = ["GET", "POST"])
 def home():
     books = None
     if request.form:
         try:
-            book = Book(title=request.form.get("title"))
+            title = request.form.get("title")
+            autor = request.form.get("autor")
+            editora = request.form.get("editora")
+            num_pags = request.form.get("qtd_pag")
+
+            book = Book(title=title, autor = autor, editora = editora, num_pags = num_pags)
             db.session.add(book)
             db.session.commit()
+
         except Exception as e:
-            print("Failed ro add book")
+            print("Failed to add book")
             print(e)
+
     books = Book.query.all()
     return render_template("index.html", books = books)
 
